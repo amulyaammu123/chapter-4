@@ -1,0 +1,72 @@
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.indexes = []
+
+class WordFilter:
+    def __init__(self, words):
+        self.prefix_trie = TrieNode()
+        self.suffix_trie = TrieNode()
+        self.n = len(words)
+        
+        # Build prefix and suffix tries
+        for index, word in enumerate(words):
+            self._insert_prefix(word, index)
+            self._insert_suffix(word, index)
+    
+    def _insert_prefix(self, word, index):
+        node = self.prefix_trie
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+            node.indexes.append(index)
+        node.indexes.append(index)  # Store the index in the leaf node
+    
+    def _insert_suffix(self, word, index):
+        node = self.suffix_trie
+        for char in reversed(word):
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+            node.indexes.append(index)
+        node.indexes.append(index)  # Store the index in the leaf node
+    
+    def _search_prefix(self, prefix):
+        node = self.prefix_trie
+        for char in prefix:
+            if char in node.children:
+                node = node.children[char]
+            else:
+                return []
+        return node.indexes
+    
+    def _search_suffix(self, suffix):
+        node = self.suffix_trie
+        for char in reversed(suffix):
+            if char in node.children:
+                node = node.children[char]
+            else:
+                return []
+        return node.indexes
+    
+    def f(self, prefix, suffix):
+        prefix_indexes = self._search_prefix(prefix)
+        suffix_indexes = self._search_suffix(suffix)
+        
+        # Find the largest common index
+        i, j = len(prefix_indexes) - 1, len(suffix_indexes) - 1
+        while i >= 0 and j >= 0:
+            if prefix_indexes[i] == suffix_indexes[j]:
+                return prefix_indexes[i]
+            elif prefix_indexes[i] > suffix_indexes[j]:
+                i -= 1
+            else:
+                j -= 1
+        
+        return -1
+
+# Example usage
+words = ["apple"]
+wordFilter = WordFilter(words)
+print(wordFilter.f("a", "e"))  # Output: 0
