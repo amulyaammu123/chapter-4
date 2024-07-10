@@ -1,0 +1,41 @@
+def min_production_time(assembly_lines, transfer_times, dependencies):
+    n = len(assembly_lines[0])  
+    if n == 0:
+        return 0
+    dp1 = [0] * n
+    dp2 = [0] * n
+    dp3 = [0] * n
+    dp1[0] = assembly_lines[0][0]
+    dp2[0] = assembly_lines[1][0]
+    dp3[0] = assembly_lines[2][0]
+    for i in range(1, n):
+        dp1[i] = assembly_lines[0][i] + min(dp1[i-1], dp2[i-1] + transfer_times[1][0], dp3[i-1] + transfer_times[2][0])
+        dp2[i] = assembly_lines[1][i] + min(dp2[i-1], dp1[i-1] + transfer_times[0][1], dp3[i-1] + transfer_times[2][1])
+        dp3[i] = assembly_lines[2][i] + min(dp3[i-1], dp1[i-1] + transfer_times[0][2], dp2[i-1] + transfer_times[1][2])
+        if i in dependencies[0]:
+            dp1[i] += dp2[i-1] + transfer_times[1][0]
+        if i in dependencies[1]:
+            dp2[i] += dp1[i-1] + transfer_times[0][1]
+        if i in dependencies[2]:
+            dp3[i] += min(dp1[i-1] + transfer_times[0][2], dp2[i-1] + transfer_times[1][2])
+    return min(dp1[n-1], dp2[n-1], dp3[n-1])
+assembly_lines = [
+    [7, 9, 3, 4],   
+    [8, 6, 7, 2],   
+    [9, 3, 6, 1]    
+]
+
+transfer_times = [
+    [0, 2, 3],       
+    [2, 0, 1],      
+    [3, 1, 0]       
+]
+
+dependencies = [
+    [1],            
+    [],             
+    [0, 1]          
+]
+
+min_time = min_production_time(assembly_lines, transfer_times, dependencies)
+print(f"Minimum production time: {min_time}")
