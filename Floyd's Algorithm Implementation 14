@@ -1,0 +1,85 @@
+import numpy as np
+
+# Define a large value to represent infinity (no path)
+INF = float('inf')
+
+# Step 1: Initialize the Distance Matrix
+def initialize_distance_matrix(n, edges):
+    graph = np.full((n, n), INF)
+    np.fill_diagonal(graph, 0)  # Distance from a node to itself is 0
+    
+    for u, v, w in edges:
+        graph[u][v] = w
+        graph[v][u] = w  # Assuming undirected graph
+
+    return graph
+
+# Step 2: Floyd's Algorithm Implementation
+def floyd_warshall(graph):
+    num_vertices = len(graph)
+    dist = graph.copy()
+
+    for k in range(num_vertices):
+        for i in range(num_vertices):
+            for j in range(num_vertices):
+                if dist[i][j] > dist[i][k] + dist[k][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+                    
+    return dist
+
+# Step 3: Identify Neighboring Cities within a Distance Threshold
+def find_neighbors_within_threshold(dist_matrix, threshold):
+    n = len(dist_matrix)
+    neighbors = {i: [] for i in range(n)}
+
+    for i in range(n):
+        for j in range(n):
+            if i != j and dist_matrix[i][j] <= threshold:
+                neighbors[i].append(j)
+                
+    return neighbors
+
+# Display the shortest path distance
+def display_distance_matrix(matrix, title):
+    print(title)
+    print(matrix)
+
+# Function to find and print the shortest path between two cities
+def find_shortest_path(dist_matrix, start, end):
+    return dist_matrix[start][end]
+
+# Main function to run the steps
+def main():
+    n = 5
+    edges = [[0,1,2],[0,4,8],[1,2,3],[1,4,2],[2,3,1],[3,4,1]]
+    distance_threshold = 2
+
+    # Initialize the distance matrix
+    graph = initialize_distance_matrix(n, edges)
+    
+    # Display the initial distance matrix
+    display_distance_matrix(graph, "Distance Matrix Before Floyd's Algorithm:")
+    
+    # Calculate the shortest paths using Floyd's Algorithm
+    shortest_paths = floyd_warshall(graph)
+    
+    # Display the distance matrix after applying Floyd's Algorithm
+    display_distance_matrix(shortest_paths, "Distance Matrix After Floyd's Algorithm:")
+    
+    # Identify neighboring cities within the given distance threshold
+    neighbors = find_neighbors_within_threshold(shortest_paths, distance_threshold)
+    print(f"Neighbors within distance threshold {distance_threshold}:")
+    for city, neighbors_list in neighbors.items():
+        print(f"City {city} -> {['City ' + str(n) for n in neighbors_list]}")
+    
+    # Test cases
+    test_cases = [
+        (2, 0, "C to A"),
+        (4, 2, "E to C")
+    ]
+    
+    for start, end, description in test_cases:
+        print(f"Shortest path from {description}: {find_shortest_path(shortest_paths, start, end)}")
+
+# Run the main function
+main()
