@@ -1,0 +1,60 @@
+from collections import deque, defaultdict
+
+def catMouseGame(graph):
+    N = len(graph)
+    
+    # dp[mouse][cat][turn] = result (0: Draw, 1: Mouse wins, 2: Cat wins)
+    dp = [[[-1] * 2 for _ in range(N)] for _ in range(N)]
+    
+    # Result is known if mouse is at hole
+    for i in range(1, N):
+        dp[0][i][0] = dp[0][i][1] = 1  # Mouse wins
+        dp[i][i][0] = dp[i][i][1] = 2  # Cat wins
+
+    # BFS queue
+    queue = deque()
+    
+    for i in range(1, N):
+        for turn in range(2):
+            queue.append((0, i, turn, 1))  # Mouse wins
+            queue.append((i, i, turn, 2))  # Cat wins
+    
+    def parents(mouse, cat, turn):
+        if turn == 1:  # Cat's turn, so previous is mouse's move
+            for m in graph[mouse]:
+                yield (m, cat, 0)
+        else:  # Mouse's turn, so previous is cat's move
+            for c in graph[cat]:
+                if c > 0:  # Cat cannot move to the hole
+                    yield (mouse, c, 1)
+    
+    # Process the queue
+    while queue:
+        mouse, cat, turn, result = queue.popleft()
+        dp[mouse][cat][turn] = result
+        
+        for m, c, t in parents(mouse, cat, turn):
+            if dp[m][c][t] != -1:
+                continue
+            if t == 0 and result == 1 or t == 1 and result == 2:
+                dp[m][c][t] = result
+                queue.append((m, c, t, result))
+            else:
+                draw = True
+                for next_m, next_c, next_t in parents(m, c, t):
+                    if dp[next_m][next_c][next_t] != result:
+                        draw = False
+                        break
+                if draw:
+                    dp[m][c][t] = result
+                    queue.append((m, c, t, result))
+    
+    return dp[1][2][0]
+
+# Example 1
+graph1 = [[2,5],[3],[0,4,5],[1,4,5],[2,3],[0,2,3]]
+print(catMouseGame(graph1))  # Output: 0
+
+# Example 2
+graph2 = [[1,3],[0],[3],[0,2]]
+print(catMouseGame(graph2))  # Output: 1
