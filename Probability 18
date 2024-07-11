@@ -1,0 +1,49 @@
+import heapq
+
+def maxProbability(n, edges, succProb, start, end):
+    # Create adjacency list
+    graph = [[] for _ in range(n)]
+    for (a, b), prob in zip(edges, succProb):
+        graph[a].append((b, prob))
+        graph[b].append((a, prob))
+    
+    # Max-heap priority queue (negative probabilities to simulate max-heap with min-heap)
+    pq = [(-1, start)]  # (negative probability, node)
+    # Probability to reach each node
+    probabilities = [0] * n
+    probabilities[start] = 1
+    
+    while pq:
+        curr_prob, node = heapq.heappop(pq)
+        curr_prob = -curr_prob
+        
+        # If we reach the end node, return the probability
+        if node == end:
+            return curr_prob
+        
+        # Explore neighbors
+        for neighbor, edge_prob in graph[node]:
+            new_prob = curr_prob * edge_prob
+            # If we find a higher probability path to the neighbor
+            if new_prob > probabilities[neighbor]:
+                probabilities[neighbor] = new_prob
+                heapq.heappush(pq, (-new_prob, neighbor))
+    
+    # If there's no path to the end node
+    return 0.0
+
+# Example 1
+n1 = 3
+edges1 = [[0, 1], [1, 2], [0, 2]]
+succProb1 = [0.5, 0.5, 0.2]
+start1 = 0
+end1 = 2
+print(maxProbability(n1, edges1, succProb1, start1, end1))  # Output: 0.25000
+
+# Example 2
+n2 = 3
+edges2 = [[0, 1], [1, 2], [0, 2]]
+succProb2 = [0.5, 0.5, 0.3]
+start2 = 0
+end2 = 2
+print(maxProbability(n2, edges2, succProb2, start2, end2))  # Output: 0.30000
